@@ -1,0 +1,20 @@
+{
+  "name": "@breek/github-user-contribution",
+  "version": "0.1.0",
+  "description": "Fetch and process GitHub user contribution data",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "bun build.ts",
+    "test": "bun test"
+  },
+  "dependencies": {
+    "@octokit/graphql": "^5.0.5"
+  },
+  "devDependencies": {
+    "@types/node": "^18.0.0",
+    "@breek/types": "workspace:*",
+    "dotenv": "16.4.5",
+    "typescript": "5.5.4"
+  }
+}

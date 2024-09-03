@@ -1,0 +1,16 @@
+{
+  "name": "@breek/svg-creator",
+  "version": "0.1.0",
+  "description": "SVG generation logic for the Break project",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "bun build.ts",
+    "test": "bun test"
+  },
+  "devDependencies": {
+    "@types/node": "^18.0.0",
+    "@breek/types": "workspace:*",
+    "typescript": "5.5.4"
+  }
+}

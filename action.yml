@@ -1,0 +1,26 @@
+name: "generate-breakout-game-from-github-contribution-grid"
+description: "Generates a breakout game animation from a github user contributions grid. Output the animation as svg or gif"
+author: "Cherninlab"
+
+runs:
+  using: docker
+  image: Dockerfile
+
+inputs:
+  github_user_name:
+    description: "github user name"
+    required: true
+  github_token:
+    description: "github token used to fetch the contribution calendar. Default to the action token if empty."
+    required: false
+    default: ${{ github.token }}
+  outputs:
+    required: false
+    description: |
+      list of files to generate.
+      one file per line. Each output can be customized with options as query string.
+
+      example:
+        outputs: |
+          dist/github-contribution-breek.svg
+          dist/github-contribution-breek.gif

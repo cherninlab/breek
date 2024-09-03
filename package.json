@@ -1,0 +1,34 @@
+{
+  "name": "breek",
+  "version": "0.1.0",
+  "description": "Break your GitHub contribution graph into a playable breakout animation",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "bun run packages/demo/src/index.ts",
+    "build": "bun run build --cwd packages/action",
+    "build:all": "bun run build --cwd packages/action && bun run build --cwd packages/svg-creator && bun run build --cwd packages/gif-creator && bun run build --cwd packages/github-user-contribution && bun run build --cwd packages/solver",
+    "test": "bun test $(find packages -name '*.test.ts')",
+    "test:coverage": "bun test --coverage $(find packages -name '*.test.ts')"
+  },
+  "keywords": [
+    "github",
+    "contribution",
+    "graph",
+    "breakout",
+    "animation",
+    "svg",
+    "gif"
+  ],
+  "author": "Cherninlab",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/bun": "latest",
+    "typescript": "5.5.4"
+  },
+  "peerDependencies": {
+    "typescript": "5.5.4"
+  }
+}
