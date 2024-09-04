@@ -1,16 +1,24 @@
 {
   "name": "@breek/demo",
   "version": "0.1.0",
-  "description": "Development and demonstration environment for the Break project",
+  "description": "Qwik-based demo for the Breek project",
   "scripts": {
-    "dev": "bun run src/index.ts"
+    "dev": "vite --mode ssr",
+    "build": "vite build",
+    "serve": "vite preview"
   },
   "dependencies": {
+    "@breek/github-user-contribution": "workspace:*",
+    "@breek/solver": "workspace:*",
     "@breek/svg-creator": "workspace:*",
-    "@breek/gif-creator": "workspace:*",
-    "@breek/github-user-contribution": "workspace:*"
+    "@breek/commons": "workspace:*"
   },
   "devDependencies": {
-    "typescript": "5.5.4"
+    "@builder.io/qwik": "1.8.0",
+    "@builder.io/qwik-city": "1.8.0",
+    "typescript": "5.5.4",
+    "vite": "5.3.5",
+    "vite-tsconfig-paths": "4.2.1",
+    "vitest": "2.0.5"
   }
 }

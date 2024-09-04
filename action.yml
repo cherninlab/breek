@@ -1,26 +1,32 @@
 name: "generate-breakout-game-from-github-contribution-grid"
-description: "Generates a breakout game animation from a github user contributions grid. Output the animation as svg or gif"
-author: "Cherninlab"
+description: "Generates a breakout game animation from a github user contributions grid."
+author: "cherninlab"
+
+branding:
+  icon: 'play'
+  color: 'green'
 
 runs:
-  using: docker
-  image: Dockerfile
+  using: "docker"
+  image: "docker://ghcr.io/cherninlab/breek@sha256:5ed417f71408a15a5762857cda076c0d51e841e8d78b12c1045756594be4b45f"
 
 inputs:
   github_user_name:
-    description: "github user name"
+    description: "GitHub username"
     required: true
   github_token:
-    description: "github token used to fetch the contribution calendar. Default to the action token if empty."
+    description: "GitHub token used to fetch the contribution calendar. Defaults to the action token if empty."
     required: false
     default: ${{ github.token }}
-  outputs:
-    required: false
-    description: |
-      list of files to generate.
-      one file per line. Each output can be customized with options as query string.
+  svg_out_path:
+    description: "Output path for the light mode SVG file"
+    required: true
+  svg_dark_out_path:
+    description: "Output path for the dark mode SVG file"
+    required: true
 
-      example:
-        outputs: |
-          dist/github-contribution-breek.svg
-          dist/github-contribution-breek.gif
+outputs:
+  svg_path:
+    description: "Path to the generated light mode SVG file"
+  svg_dark_path:
+    description: "Path to the generated dark mode SVG file"

@@ -1,50 +1,62 @@
 import { expect, test } from "bun:test";
-import { createSvg, DrawOptions, AnimationFrame } from "./index";
-// import fs from 'fs';
-// import path from 'path';
+import { createSvg } from "./index";
+import type { GameBoard, DrawOptions, AnimationFrame } from "@breek/commons";
 
 test("createSvg should generate a valid SVG", () => {
-    const initialGrid: AnimationFrame['grid'] = {
-        width: 5,
-        height: 3,
-        getColor: (x: number, y: number) => (x + y) % 4
-    };
+  const initialBoard: GameBoard = {
+    width: 832,
+    height: 112,
+    blocks: Array(52 * 7)
+      .fill(null)
+      .map((_, index) => ({
+        x: (index % 52) * 16,
+        y: Math.floor(index / 52) * 16,
+        lives: 1,
+        visible: true,
+      })),
+    getColor: (x: number, y: number) => {
+      const block = initialBoard.blocks.find(
+        (b) => b.x === x * 16 && b.y === y * 16,
+      );
+      return block ? block.lives : 0;
+    },
+  };
 
-    const frames: AnimationFrame[] = [
-        { ballX: 2, ballY: 2, paddleX: 1, grid: initialGrid },
-        { ballX: 3, ballY: 1, paddleX: 2, grid: initialGrid },
-        { ballX: 4, ballY: 2, paddleX: 3, grid: initialGrid },
-    ];
+  const frames: AnimationFrame[] = [
+    {
+      ball: { x: 416, y: 300, dx: 5, dy: -5 },
+      paddle: { x: 366, width: 100 },
+      board: initialBoard,
+    },
+    {
+      ball: { x: 421, y: 295, dx: 5, dy: -5 },
+      paddle: { x: 371, width: 100 },
+      board: initialBoard,
+    },
+    {
+      ball: { x: 426, y: 290, dx: 5, dy: -5 },
+      paddle: { x: 376, width: 100 },
+      board: initialBoard,
+    },
+  ];
 
-    const options: DrawOptions = {
-        colorDots: { 1: '#9be9a8', 2: '#40c463', 3: '#30a14e', 4: '#216e39' },
-        colorEmpty: '#ebedf0',
-        colorBall: 'white',
-        colorPaddle: 'purple',
-        sizeCell: 16,
-        sizeDot: 12,
-        paddleWidth: 32,
-        paddleHeight: 8,
-        ballRadius: 6,
-    };
+  const options: DrawOptions = {
+    colorDots: {
+      0: "#ebedf0",
+      1: "#9be9a8",
+      2: "#40c463",
+      3: "#30a14e",
+      4: "#216e39",
+    },
+    colorEmpty: "#ebedf0",
+    colorPaddle: "purple",
+  };
 
-    const svg = createSvg(initialGrid, frames, options);
+  const svg = createSvg(initialBoard, frames, options);
 
-    expect(svg).toContain('<svg');
-    expect(svg).toContain('</svg>');
-    expect(svg).toContain('<rect');
-    expect(svg).toContain('<circle');
-    expect(svg).toContain('<animateMotion');
-    expect(svg).toContain('<animate');
-
-    // Save the SVG to a file for manual inspection
-    /*
-    const testOutputDir = path.join(__dirname, '..', 'test-output');
-    if (!fs.existsSync(testOutputDir)) {
-        fs.mkdirSync(testOutputDir, { recursive: true });
-    }
-    fs.writeFileSync(path.join(testOutputDir, 'test-output.svg'), svg);
-
-    console.log("SVG saved to:", path.join(testOutputDir, 'test-output.svg'));
-    */
+  expect(svg).toContain("<svg");
+  expect(svg).toContain("</svg>");
+  expect(svg).toContain("<rect");
+  expect(svg).toContain("<circle");
+  expect(svg).toContain("<animate");
 });

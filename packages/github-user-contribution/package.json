@@ -13,7 +13,7 @@
   },
   "devDependencies": {
     "@types/node": "^18.0.0",
-    "@breek/types": "workspace:*",
+    "@breek/commons": "workspace:*",
     "dotenv": "16.4.5",
     "typescript": "5.5.4"
   }

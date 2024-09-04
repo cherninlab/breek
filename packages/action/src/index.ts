@@ -1,53 +1,64 @@
-import * as core from '@actions/core';
-import { fetchUserContributions } from '@breek/github-user-contribution';
-import { createGameBoard, simulateGame } from '@breek/solver';
-import { createSvg, DrawOptions } from '@breek/svg-creator';
-import { writeFileSync, mkdirSync } from 'fs';
-import { dirname } from 'path';
+import * as core from "@actions/core";
+import { getGithubUserContribution } from "@breek/github-user-contribution";
+import { createGameBoard, simulateGame } from "@breek/solver";
+import { createSvg } from "@breek/svg-creator";
+import { writeFileSync, mkdirSync } from "fs";
+import { dirname } from "path";
+import {
+  basePalettes,
+  defaultSimulationOptions,
+  DrawOptions,
+} from "@breek/commons";
 
 async function run() {
-    try {
-        const userName = core.getInput('github_user_name');
-        const outputFile = core.getInput('output');
-        const githubToken = core.getInput('github_token');
+  try {
+    const userName = core.getInput("github_user_name");
+    const githubToken = core.getInput("github_token");
+    const svgOutPath = core.getInput("svg_out_path");
+    const svgDarkOutPath = core.getInput("svg_dark_out_path");
 
-        const contributionData = await fetchUserContributions(userName, githubToken);
-        const gameBoard = createGameBoard(contributionData);
+    const contributionData = await getGithubUserContribution(
+      userName,
+      githubToken,
+    );
+    const gameBoard = createGameBoard(contributionData);
 
-        const simulationOptions = {
-            frameDuration: 100,
-            totalDuration: 60000 // 60 seconds
-        };
-        const gameStates = simulateGame(gameBoard, simulationOptions);
+    const gameStates = simulateGame(gameBoard, defaultSimulationOptions);
 
-        const drawOptions: DrawOptions = {
-            colorDots: { 1: '#9be9a8', 2: '#40c463', 3: '#30a14e', 4: '#216e39' },
-            colorEmpty: '#ebedf0',
-            colorBall: 'white',
-            colorPaddle: 'purple',
-            sizeCell: 16,
-            sizeDot: 12,
-            paddleWidth: 60,
-            paddleHeight: 10,
-            ballRadius: 5,
-        };
+    const lightPalette = basePalettes["github-light"];
+    const darkPalette = basePalettes["github-dark"];
 
-        const frames = gameStates.map(state => ({
-            ballX: state.ball.x,
-            ballY: state.ball.y,
-            paddleX: state.paddle.x,
-            grid: state.board
-        }));
+    const drawOptions: DrawOptions = {
+      colorDots: lightPalette.colorDots,
+      colorEmpty: lightPalette.colorEmpty,
+      colorPaddle: "purple",
+    };
 
-        const svgString = createSvg(gameBoard, frames, drawOptions);
+    const darkDrawOptions: DrawOptions = {
+      colorDots: darkPalette.colorDots,
+      colorEmpty: darkPalette.colorEmpty,
+      colorPaddle: "purple",
+    };
 
-        mkdirSync(dirname(outputFile), { recursive: true });
-        writeFileSync(outputFile, svgString);
+    const frames = gameStates.map((state) => ({
+      ball: state.ball,
+      paddle: state.paddle,
+      board: state.board,
+    }));
 
-        console.log(`SVG written to ${outputFile}`);
-    } catch (error) {
-        core.setFailed(error.message);
-    }
+    const svgString = createSvg(gameBoard, frames, drawOptions);
+    const svgDarkString = createSvg(gameBoard, frames, darkDrawOptions);
+
+    mkdirSync(dirname(svgOutPath), { recursive: true });
+    writeFileSync(svgOutPath, svgString);
+    console.log(`SVG written to ${svgOutPath}`);
+
+    mkdirSync(dirname(svgDarkOutPath), { recursive: true });
+    writeFileSync(svgDarkOutPath, svgDarkString);
+    console.log(`Dark mode SVG written to ${svgDarkOutPath}`);
+  } catch (error) {
+    core.setFailed((error as Error).message);
+  }
 }
 
 run();

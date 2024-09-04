@@ -1,18 +1,20 @@
-import { graphql } from "@octokit/graphql";
-import type { ContributionDay, UserContributions } from '@breek/types';
+import { Cell, GraphQLRes } from "@breek/commons";
 
-export async function fetchUserContributions(username: string, token: string): Promise<ContributionDay[]> {
-    const query = `
-    query($username: String!) {
-      user(login: $username) {
+export const getGithubUserContribution = async (
+  userName: string,
+  githubToken: string,
+): Promise<Cell[]> => {
+  const query = /* GraphQL */ `
+    query ($login: String!) {
+      user(login: $login) {
         contributionsCollection {
           contributionCalendar {
-            totalContributions
             weeks {
               contributionDays {
-                date
                 contributionCount
-                color
+                contributionLevel
+                weekday
+                date
               }
             }
           }
@@ -20,35 +22,56 @@ export async function fetchUserContributions(username: string, token: string): P
       }
     }
   `;
+  const variables = { login: userName };
 
-    try {
-        const { user } = await graphql<UserContributions>(query, {
-            username,
-            headers: {
-                authorization: `token ${token}`,
-            },
-        });
+  const res = await fetch("https://api.github.com/graphql", {
+    headers: {
+      Authorization: `bearer ${githubToken}`,
+      "Content-Type": "application/json",
+    },
+    method: "POST",
+    body: JSON.stringify({ variables, query }),
+  });
 
-        return user.contributionsCollection.contributionCalendar.weeks
-            .flatMap(week => week.contributionDays);
-    } catch (error) {
-        console.error("Error fetching user contributions:", error);
-        throw new Error("Failed to fetch user contributions");
+  if (!res.ok) throw new Error(res.statusText);
+
+  const { data, errors } = (await res.json()) as {
+    data: GraphQLRes;
+    errors?: { message: string }[];
+  };
+
+  if (errors?.[0]) throw errors[0];
+
+  return data.user.contributionsCollection.contributionCalendar.weeks.flatMap(
+    (week, x) =>
+      week.contributionDays.map((d) => ({
+        x,
+        y: d.weekday,
+        date: d.date,
+        count: d.contributionCount,
+        level:
+          (d.contributionLevel === "FOURTH_QUARTILE" && 4) ||
+          (d.contributionLevel === "THIRD_QUARTILE" && 3) ||
+          (d.contributionLevel === "SECOND_QUARTILE" && 2) ||
+          (d.contributionLevel === "FIRST_QUARTILE" && 1) ||
+          0,
+      })),
+  );
+};
+
+export const userContributionToGrid = (cells: Cell[]) => {
+  const width = Math.max(0, ...cells.map((c) => c.x)) + 1;
+  const height = Math.max(0, ...cells.map((c) => c.y)) + 1;
+
+  const grid = Array(height)
+    .fill(null)
+    .map(() => Array(width).fill(0));
+
+  for (const c of cells) {
+    if (c.level > 0) {
+      grid[c.y][c.x] = c.level;
     }
-}
+  }
 
-export function parseContributionData(data: ContributionDay[]): number[][] {
-    const contributionGrid: number[][] = [];
-    let currentWeek: number[] = [];
-
-    data.forEach((day, index) => {
-        currentWeek.push(day.contributionCount);
-
-        if ((index + 1) % 7 === 0 || index === data.length - 1) {
-            contributionGrid.push(currentWeek);
-            currentWeek = [];
-        }
-    });
-
-    return contributionGrid;
-}
+  return grid;
+};

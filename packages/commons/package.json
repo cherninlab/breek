@@ -1,5 +1,5 @@
 {
-  "name": "@breek/types",
+  "name": "@breek/commons",
   "version": "0.1.0",
   "main": "index.ts"
 }

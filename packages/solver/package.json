@@ -9,8 +9,7 @@
     "test": "bun test"
   },
   "dependencies": {
-    "@breek/types": "workspace:*",
-    "detect-collisions": "^9.14.1"
+    "@breek/commons": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^18.0.0",

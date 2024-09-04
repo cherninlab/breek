@@ -1,103 +1,119 @@
 import { expect, test } from "bun:test";
 import { simulateGame } from "./gameSimulation";
-import type { GameBoard, SimulationOptions, GameState } from "./types";
+import type { GameBoard, SimulationOptions } from "@breek/commons";
 
-const mockOptions: SimulationOptions = {
-    frameDuration: 100,
-    totalDuration: 60000 // 60 seconds
+const createMockGameBoard = (): GameBoard => {
+  const blocks = Array(52 * 7)
+    .fill(null)
+    .map((_, index) => ({
+      x: (index % 52) * 16,
+      y: Math.floor(index / 52) * 16,
+      lives: 1,
+      visible: true,
+    }));
+
+  return {
+    width: 832,
+    height: 112,
+    blocks,
+    getColor: (x: number, y: number) => {
+      const block = blocks.find((b) => b.x === x * 16 && b.y === y * 16);
+      return block ? block.lives : 0;
+    },
+  };
 };
 
-function createMockGameBoard(): GameBoard {
-    return {
-        width: 52,
-        height: 30,
-        blocks: [
-            { x: 0, y: 0, health: 1 },
-            { x: 10, y: 0, health: 1 },
-            { x: 20, y: 0, health: 1 },
-            { x: 30, y: 0, health: 1 },
-            { x: 40, y: 0, health: 1 },
-            { x: 50, y: 0, health: 1 },
-            { x: 5, y: 5, health: 1 },
-            { x: 15, y: 5, health: 1 },
-            { x: 25, y: 5, health: 1 },
-            { x: 35, y: 5, health: 1 },
-            { x: 45, y: 5, health: 1 },
-        ]
-    };
-}
+const mockOptions: SimulationOptions = {
+  frameDuration: 16, // 60 fps
+  totalDuration: 10000, // 10 seconds
+};
 
-function hasGameProgressed(initialState: GameState, finalState: GameState): boolean {
-    return finalState.score > initialState.score ||
-        finalState.board.blocks.length < initialState.board.blocks.length ||
-        finalState.ball.x !== initialState.ball.x ||
-        finalState.ball.y !== initialState.ball.y ||
-        finalState.paddle.x !== initialState.paddle.x;
-}
+test("simulateGame - initial state", () => {
+  const mockGameBoard = createMockGameBoard();
+  const gameStates = simulateGame(mockGameBoard, mockOptions);
 
-test("simulateGame - basic functionality", () => {
-    const mockGameBoard = createMockGameBoard();
-    const gameStates = simulateGame(mockGameBoard, mockOptions);
-
-    expect(gameStates.length).toBeGreaterThan(1);
-    expect(gameStates[0].board).toEqual(mockGameBoard);
-    expect(gameStates[0].score).toBe(0);
-
-    // Check that the game has progressed
-    expect(hasGameProgressed(gameStates[0], gameStates[gameStates.length - 1])).toBe(true);
-
-    // Check that the ball is moving
-    expect(gameStates[1].ball).not.toEqual(gameStates[0].ball);
-
-    // Check that the paddle is moving
-    expect(gameStates[1].paddle).not.toEqual(gameStates[0].paddle);
+  expect(gameStates.length).toBeGreaterThan(1);
+  expect(gameStates[0].board.blocks).toEqual(mockGameBoard.blocks);
+  expect(gameStates[0].score).toBe(0);
 });
 
 test("simulateGame - ball movement", () => {
-    const mockGameBoard = createMockGameBoard();
-    const gameStates = simulateGame(mockGameBoard, mockOptions);
+  const mockGameBoard = createMockGameBoard();
+  const gameStates = simulateGame(mockGameBoard, mockOptions);
 
-    // Check that the ball's position changes over time
-    const ballPositions = new Set(gameStates.map(state => `${state.ball.x},${state.ball.y}`));
-    expect(ballPositions.size).toBeGreaterThan(1);
+  const initialBall = gameStates[0].ball;
+  const finalBall = gameStates[gameStates.length - 1].ball;
+
+  expect(finalBall.x).not.toBe(initialBall.x);
+  expect(finalBall.y).not.toBe(initialBall.y);
 });
 
 test("simulateGame - paddle movement", () => {
-    const mockGameBoard = createMockGameBoard();
-    const gameStates = simulateGame(mockGameBoard, mockOptions);
+  const mockGameBoard = createMockGameBoard();
+  const gameStates = simulateGame(mockGameBoard, mockOptions);
 
-    // Check that the paddle's position changes over time
-    const paddlePositions = new Set(gameStates.map(state => state.paddle.x));
-    expect(paddlePositions.size).toBeGreaterThan(1);
+  const paddlePositions = new Set(gameStates.map((state) => state.paddle.x));
+  expect(paddlePositions.size).toBeGreaterThan(1);
 });
 
-test("simulateGame - potential collisions", () => {
-    const mockGameBoard = createMockGameBoard();
-    const gameStates = simulateGame(mockGameBoard, mockOptions);
+test("simulateGame - block destruction", () => {
+  const mockGameBoard = createMockGameBoard();
+  const gameStates = simulateGame(mockGameBoard, mockOptions);
 
-    // Check for potential collisions (changes in ball direction)
-    const directionChanges = gameStates.filter((state, index) => {
-        if (index === 0) return false;
-        const prevState = gameStates[index - 1];
-        return (prevState.ball.dx !== state.ball.dx || prevState.ball.dy !== state.ball.dy);
-    });
+  const initialBlockCount = mockGameBoard.blocks.filter(
+    (b) => b.lives > 0,
+  ).length;
+  const finalBlockCount = gameStates[gameStates.length - 1].board.blocks.filter(
+    (b) => b.lives > 0,
+  ).length;
 
-    expect(directionChanges.length).toBeGreaterThan(0);
+  expect(finalBlockCount).toBeLessThan(initialBlockCount);
 });
 
-test("simulateGame - score and block changes", () => {
-    const mockGameBoard = createMockGameBoard();
-    const gameStates = simulateGame(mockGameBoard, mockOptions);
+test("simulateGame - score increase", () => {
+  const mockGameBoard = createMockGameBoard();
+  const gameStates = simulateGame(mockGameBoard, mockOptions);
 
-    const initialState = gameStates[0];
-    const finalState = gameStates[gameStates.length - 1];
+  const initialScore = gameStates[0].score;
+  const finalScore = gameStates[gameStates.length - 1].score;
 
-    console.log(`Initial blocks: ${initialState.board.blocks.length}, Final blocks: ${finalState.board.blocks.length}`);
-    console.log(`Initial score: ${initialState.score}, Final score: ${finalState.score}`);
+  expect(finalScore).toBeGreaterThan(initialScore);
+});
 
-    // Check if either the score increased or the number of blocks decreased
-    const scoreIncreased = finalState.score > initialState.score;
-    const blocksDecreased = finalState.board.blocks.length < initialState.board.blocks.length;
+test("simulateGame - ball speed limits", () => {
+  const mockGameBoard = createMockGameBoard();
+  const gameStates = simulateGame(mockGameBoard, mockOptions);
 
-    expect(scoreIncreased || blocksDecreased).toBe(true);
+  gameStates.forEach((state) => {
+    const speed = Math.sqrt(state.ball.dx ** 2 + state.ball.dy ** 2);
+    expect(speed).toBeGreaterThanOrEqual(6); // MIN_BALL_SPEED
+    expect(speed).toBeLessThanOrEqual(16); // MAX_BALL_SPEED
+  });
+});
+
+test("simulateGame - game end condition", () => {
+  const mockGameBoard = createMockGameBoard();
+  const gameStates = simulateGame(mockGameBoard, {
+    frameDuration: 16,
+    totalDuration: 1000000, // Very long duration to ensure game ends
+  });
+
+  const lastState = gameStates[gameStates.length - 1];
+  const allBlocksDestroyed = lastState.board.blocks.every(
+    (block) => block.lives <= 0,
+  );
+
+  expect(allBlocksDestroyed).toBe(true);
+});
+
+test("simulateGame - blocks remain in array when destroyed", () => {
+  const mockGameBoard = createMockGameBoard();
+  const gameStates = simulateGame(mockGameBoard, {
+    frameDuration: 16,
+    totalDuration: 1000000, // Very long duration to ensure game ends
+  });
+
+  const lastState = gameStates[gameStates.length - 1];
+  expect(lastState.board.blocks.length).toBe(mockGameBoard.blocks.length);
+  expect(lastState.board.blocks.every((block) => block.lives <= 0)).toBe(true);
 });

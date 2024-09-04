@@ -5,9 +5,9 @@ Fetch and process GitHub user contribution data.
 ## Usage
 
 ```typescript
-import { fetchUserContributions } from '@break/github-user-contribution';
+import { fetchUserContributions } from "@break/github-user-contribution";
 
-const data = await fetchUserContributions('username', token);
+const data = await fetchUserContributions("username", token);
 ```
 
 ## API

@@ -10,7 +10,8 @@
   },
   "devDependencies": {
     "@types/node": "^18.0.0",
-    "@breek/types": "workspace:*",
+    "@breek/commons": "workspace:*",
+    "@breek/solver": "workspace:*",
     "typescript": "5.5.4"
   }
 }

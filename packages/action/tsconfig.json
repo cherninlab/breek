@@ -8,7 +8,9 @@
     "noUnusedParameters": true,
     "forceConsistentCasingInFileNames": true,
     "esModuleInterop": true,
-    "moduleResolution": "node"
+    "moduleResolution": "node",
+    "jsx": "react-jsx",
+    "jsxImportSource": "@builder.io/qwik"
   },
   "exclude": ["node_modules"]
 }

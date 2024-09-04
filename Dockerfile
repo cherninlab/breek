@@ -1,44 +1,20 @@
-# Use Node.js as the base image (Bun currently doesn't have an official Docker image)
-FROM node:20-slim as builder
+FROM oven/bun:latest AS base
 
-# Install bun
-RUN curl -fsSL https://bun.sh/install | bash
+WORKDIR /usr/src/app
 
-# Add Bun to PATH
-ENV PATH="/root/.bun/bin:${PATH}"
+FROM base AS prerelease
 
-# Set working directory
-WORKDIR /app
+COPY . .
 
-# Copy package.json and bun.lockb (if you're using Bun's lockfile)
-COPY package.json bun.lockb* ./
+RUN bun install
 
-# Copy tsconfig.json
-COPY tsconfig.json ./
+RUN bun build:action
 
-# Copy packages directory
-COPY packages packages
 
-# Install dependencies
-RUN bun install --frozen-lockfile
+FROM base AS release
 
-# Build the project
-RUN bun run build:all
-
-# Start a new stage for a smaller final image
-FROM node:20-slim
-
-# Install bun
-RUN curl -fsSL https://bun.sh/install | bash
-
-# Add Bun to PATH
-ENV PATH="/root/.bun/bin:${PATH}"
-
-# Set working directory
 WORKDIR /action-release
 
-# Copy built files from the builder stage
-COPY --from=builder /app/packages/action/dist/ /action-release/
+COPY --from=prerelease /usr/src/app/packages/action/dist/ /action-release/
 
-# Set the command to run the action
 CMD ["bun", "/action-release/index.js"]

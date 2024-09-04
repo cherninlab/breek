@@ -5,7 +5,7 @@ SVG generation logic for the Breek project.
 ## Usage
 
 ```typescript
-import { createBreakoutSVG } from '@break/svg-creator';
+import { createBreakoutSVG } from "@break/svg-creator";
 
 const svg = createBreakoutSVG(contributionData, options);
 ```

@@ -1,6 +1,6 @@
-# @break/demo
+# @breek/demo
 
-Development and demonstration environment for the Breek project.
+Qwik-based development and demonstration environment for the Breek project.
 
 ## Usage
 
@@ -9,4 +9,4 @@ bun install
 bun run dev
 ```
 
-Then open `http://localhost:8080` in your browser.
+Then open `http://localhost:5173` in your browser.

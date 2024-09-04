@@ -1,24 +1,57 @@
 import { expect, test } from "bun:test";
 import { createGameBoard } from "./gameBoard";
-import type { ContributionData } from '@breek/types';
+import type { Cell } from "@breek/commons";
 
 test("createGameBoard", () => {
-    const mockContributionData: ContributionData = [
-        { date: "2023-01-01", contributionCount: 1, color: "#9be9a8" },
-        { date: "2023-01-02", contributionCount: 2, color: "#40c463" },
-        { date: "2023-01-03", contributionCount: 3, color: "#30a14e" },
-        { date: "2023-01-04", contributionCount: 4, color: "#216e39" },
-    ];
+  const mockContributionData: Cell[] = [
+    { x: 0, y: 0, date: "2023-01-01", count: 1, level: 1 },
+    { x: 1, y: 0, date: "2023-01-02", count: 2, level: 2 },
+    { x: 2, y: 0, date: "2023-01-03", count: 3, level: 3 },
+    { x: 3, y: 0, date: "2023-01-04", count: 4, level: 4 },
+    { x: 0, y: 1, date: "2023-01-05", count: 1, level: 1 },
+    { x: 1, y: 1, date: "2023-01-06", count: 2, level: 2 },
+    { x: 2, y: 1, date: "2023-01-07", count: 3, level: 3 },
+    { x: 3, y: 1, date: "2023-01-08", count: 4, level: 4 },
+  ];
 
-    const gameBoard = createGameBoard(mockContributionData);
+  const gameBoard = createGameBoard(mockContributionData);
 
-    expect(gameBoard.width).toBe(52);
-    expect(gameBoard.height).toBe(7);
-    expect(gameBoard.blocks.length).toBe(mockContributionData.length);
+  expect(gameBoard.width).toBe(832); // 52 weeks * 16 pixels per block
+  expect(gameBoard.height).toBe(112); // 7 days * 16 pixels per block
+  expect(gameBoard.blocks.length).toBe(52 * 7); // 52 weeks * 7 days
 
-    gameBoard.blocks.forEach((block, index) => {
-        expect(block.x).toBe(index % 52);
-        expect(block.y).toBe(Math.floor(index / 52));
-        expect(block.health).toBe(mockContributionData[index].contributionCount);
-    });
+  // Test getColor function
+  expect(gameBoard.getColor(0, 0)).toBe(2); // level 1 + 1
+  expect(gameBoard.getColor(1, 0)).toBe(3); // level 2 + 1
+  expect(gameBoard.getColor(2, 0)).toBe(4); // level 3 + 1
+  expect(gameBoard.getColor(3, 0)).toBe(5); // level 4 + 1
+  expect(gameBoard.getColor(0, 1)).toBe(2); // level 1 + 1
+  expect(gameBoard.getColor(1, 1)).toBe(3); // level 2 + 1
+  expect(gameBoard.getColor(2, 1)).toBe(4); // level 3 + 1
+  expect(gameBoard.getColor(3, 1)).toBe(5); // level 4 + 1
+  expect(gameBoard.getColor(4, 0)).toBe(1); // Empty block has 1 life
+});
+
+test("createGameBoard with empty data", () => {
+  const emptyContributionData: Cell[] = [];
+  const gameBoard = createGameBoard(emptyContributionData);
+
+  expect(gameBoard.width).toBe(832); // 52 weeks * 16 pixels per block
+  expect(gameBoard.height).toBe(112); // 7 days * 16 pixels per block
+  expect(gameBoard.blocks.length).toBe(52 * 7); // 52 weeks * 7 days
+});
+
+test("createGameBoard with partial data", () => {
+  const partialContributionData: Cell[] = [
+    { x: 0, y: 0, date: "2023-01-01", count: 1, level: 1 },
+    { x: 1, y: 0, date: "2023-01-02", count: 2, level: 2 },
+  ];
+  const gameBoard = createGameBoard(partialContributionData);
+
+  expect(gameBoard.width).toBe(832);
+  expect(gameBoard.height).toBe(112);
+  expect(gameBoard.blocks.length).toBe(52 * 7);
+  expect(gameBoard.getColor(0, 0)).toBe(2); // level 1 + 1
+  expect(gameBoard.getColor(1, 0)).toBe(3); // level 2 + 1
+  expect(gameBoard.getColor(2, 0)).toBe(1); // Empty block has 1 life
 });

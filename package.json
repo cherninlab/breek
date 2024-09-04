@@ -1,6 +1,6 @@
 {
   "name": "breek",
-  "version": "0.1.0",
+  "version": "1.0.0-rc.1",
   "description": "Break your GitHub contribution graph into a playable breakout animation",
   "private": true,
   "workspaces": [
@@ -8,10 +8,16 @@
   ],
   "scripts": {
     "dev": "bun run packages/demo/src/index.ts",
-    "build": "bun run build --cwd packages/action",
-    "build:all": "bun run build --cwd packages/action && bun run build --cwd packages/svg-creator && bun run build --cwd packages/gif-creator && bun run build --cwd packages/github-user-contribution && bun run build --cwd packages/solver",
     "test": "bun test $(find packages -name '*.test.ts')",
-    "test:coverage": "bun test --coverage $(find packages -name '*.test.ts')"
+    "test:coverage": "bun test --coverage $(find packages -name '*.test.ts')",
+    "fmt": "prettier --write .",
+    "build:action": "cd packages/action && bun run build",
+    "build:github-user-contribution": "cd packages/github-user-contribution && bun run build",
+    "build:solver": "cd packages/solver && bun run build",
+    "build:svg-creator": "cd packages/svg-creator && bun run build",
+    "build:demo": "cd packages/demo && bun run build",
+    "build": "bun run build:github-user-contribution && bun run build:solver && bun run build:svg-creator && bun run build:demo",
+    "postinstall": "bun run build"
   },
   "keywords": [
     "github",
@@ -26,6 +32,8 @@
   "license": "MIT",
   "devDependencies": {
     "@types/bun": "latest",
+    "bun-plugin-dts": "^0.2.3",
+    "prettier": "3.3.3",
     "typescript": "5.5.4"
   },
   "peerDependencies": {
