@@ -4,7 +4,7 @@
   "description": "Qwik-based demo for the Breek project",
   "scripts": {
     "build": "vite build",
-    "build.server": "vite build -c adapters/static/vite.config.ts",
+    "build:server": "vite build -c adapters/static/vite.config.ts",
     "dev": "vite --mode ssr",
     "serve": "vite preview"
   },

@@ -16,6 +16,7 @@
     "build:solver": "cd packages/solver && bun run build",
     "build:svg-creator": "cd packages/svg-creator && bun run build",
     "build:demo": "cd packages/demo && bun run build",
+    "build:demo:server": "cd packages/demo && bun run build:server",
     "build": "bun run build:github-user-contribution && bun run build:solver && bun run build:svg-creator && bun run build:demo",
     "postinstall": "bun run build"
   },
