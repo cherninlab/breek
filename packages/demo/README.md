@@ -10,3 +10,9 @@ bun run dev
 ```
 
 Then open `http://localhost:5173` in your browser.
+
+## Static Site Generator (Node.js)
+
+```shell
+bun build.server
+```

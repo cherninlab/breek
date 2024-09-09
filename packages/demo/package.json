@@ -3,8 +3,9 @@
   "version": "0.1.0",
   "description": "Qwik-based demo for the Breek project",
   "scripts": {
-    "dev": "vite --mode ssr",
     "build": "vite build",
+    "build.server": "vite build -c adapters/static/vite.config.ts",
+    "dev": "vite --mode ssr",
     "serve": "vite preview"
   },
   "dependencies": {
