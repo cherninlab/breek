@@ -46,7 +46,7 @@ export const createSvg = (
         height: 12px;
       }
       #paddle {
-            transition: all .1s ease-out;
+        transition: all .1s ease-out;
       }
     </style>`;
 
