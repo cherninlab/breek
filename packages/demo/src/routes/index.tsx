@@ -7,6 +7,7 @@ import {
   DrawOptions,
   Cell,
   defaultSimulationOptions,
+  SimulationOptions,
 } from "@breek/commons";
 import { basePalettes } from "@breek/commons";
 
@@ -14,6 +15,7 @@ export default component$(() => {
   const username = useSignal("");
   const token = useSignal("");
   const output = useSignal("");
+  const progressSignal = useSignal(0);
 
   const paletteType = "github-dark";
 
@@ -35,7 +37,15 @@ export default component$(() => {
       }
 
       const gameBoard = createGameBoard(contributionData);
-      const gameStates = simulateGame(gameBoard, defaultSimulationOptions);
+
+      const options: SimulationOptions = {
+        ...defaultSimulationOptions,
+        totalDuration: 100000,
+      };
+
+      const gameStates = simulateGame(gameBoard, options, (progress) => {
+        progressSignal.value = progress;
+      });
 
       if (!gameStates || gameStates.length === 0) {
         throw new Error("Game simulation failed");
@@ -70,6 +80,8 @@ export default component$(() => {
     generateBreakout();
   });
 
+  const progressPercents = progressSignal.value * 100;
+
   return (
     <main>
       <div class="inner">
@@ -90,6 +102,10 @@ export default component$(() => {
             <input bind:value={token} type="password" />
           </label>
         </div>
+
+        {progressPercents > 0 && progressPercents < 90 && (
+          <div>Progress: {progressPercents.toFixed(2)}%</div>
+        )}
 
         <div>
           <div dangerouslySetInnerHTML={output.value} />
