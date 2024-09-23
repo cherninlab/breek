@@ -3,8 +3,8 @@ description: "Generates a breakout game animation from a github user contributio
 author: "cherninlab"
 
 branding:
-  icon: 'play'
-  color: 'green'
+  icon: "play"
+  color: "green"
 
 runs:
   using: "docker"

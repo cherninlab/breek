@@ -16,6 +16,7 @@ import {
 const PADDLE_SPEED = 8;
 const MAX_BALL_SPEED = 32;
 const MIN_BALL_SPEED = 8;
+const CHUNK_SIZE = 100;
 
 export function createInitialState(board: GameBoard): GameState {
   const paddle: Paddle = {
@@ -169,6 +170,7 @@ function updateBallPosition(state: GameState) {
 export function simulateGame(
   board: GameBoard,
   options: SimulationOptions,
+  onProgress?: (progress: number) => void,
 ): GameState[] {
   const states: GameState[] = [];
   let currentState = createInitialState(board);
@@ -177,10 +179,12 @@ export function simulateGame(
   for (let frame = 0; frame < maxFrames; frame++) {
     movePaddleAI(currentState);
     updateBallPosition(currentState);
+    states.push(JSON.parse(JSON.stringify(currentState)));
 
-    states.push(JSON.parse(JSON.stringify(currentState))); // Deep clone the state
+    if (onProgress && frame % CHUNK_SIZE === 0) {
+      onProgress(frame / maxFrames);
+    }
 
-    // End the game if all blocks are destroyed
     if (currentState.board.blocks.every((block) => !block.visible)) {
       console.log("All blocks destroyed");
       break;

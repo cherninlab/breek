@@ -61,7 +61,7 @@ jobs:
         id: push-tags
         run: |
           VERSION=${{ github.event.inputs.version }}
-          
+
           git config --global user.email "bot@cherninlab.com"
           git config --global user.name "CherninLab release bot"
 

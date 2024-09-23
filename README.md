@@ -44,11 +44,15 @@ Then embed the generated image in your README using the `<picture>` tag for dark
 <picture>
   <source
     media="(prefers-color-scheme: dark)"
-    srcset="https://raw.githubusercontent.com/<Username>/<Repository>/output/github-contribution-grid-breek-dark.svg"
+    srcset="
+      https://raw.githubusercontent.com/<Username>/<Repository>/output/github-contribution-grid-breek-dark.svg
+    "
   />
   <source
     media="(prefers-color-scheme: light)"
-    srcset="https://raw.githubusercontent.com/<Username>/<Repository>/output/github-contribution-grid-breek.svg"
+    srcset="
+      https://raw.githubusercontent.com/<Username>/<Repository>/output/github-contribution-grid-breek.svg
+    "
   />
   <img
     alt="github contribution grid breek animation"
@@ -60,6 +64,7 @@ Then embed the generated image in your README using the `<picture>` tag for dark
 Replace `<Username>` and `<Repository>` with your GitHub username and repository name respectively.
 
 e.g. [demo workflow action](https://github.com/cherninlab/cherninlab/blob/main/.github/workflows/main.yml)
+
 ### Interactive Demo
 
 [cherninlab.github.io/breek](https://cherninlab.github.io/breek/)

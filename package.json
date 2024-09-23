@@ -7,7 +7,7 @@
     "packages/*"
   ],
   "scripts": {
-    "dev": "bun run packages/demo/src/index.ts",
+    "dev": "cd packages/demo && bun run dev",
     "test": "bun test $(find packages -name '*.test.ts')",
     "test:coverage": "bun test --coverage $(find packages -name '*.test.ts')",
     "fmt": "prettier --write .",
