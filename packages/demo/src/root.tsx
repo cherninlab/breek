@@ -2,9 +2,7 @@ import { component$ } from "@builder.io/qwik";
 import {
   QwikCityProvider,
   RouterOutlet,
-  ServiceWorkerRegister,
 } from "@builder.io/qwik-city";
-import { isDev } from "@builder.io/qwik/build";
 
 import "./global.css";
 
@@ -17,7 +15,6 @@ export default component$(() => {
       </head>
       <body lang="en">
         <RouterOutlet />
-        {!isDev && <ServiceWorkerRegister />}
       </body>
     </QwikCityProvider>
   );
