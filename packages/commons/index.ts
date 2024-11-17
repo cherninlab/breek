@@ -30,9 +30,23 @@ export type GraphQLRes = {
   };
 };
 
+// Updated Ball type
+export type Ball = {
+  x: number;
+  y: number;
+  dx: number;
+  dy: number;
+  previousDy?: number; // Added optional previousDy property
+};
+
+// Updated Paddle type
 export type Paddle = {
   x: number;
+  y: number;
   width: number;
+  targetX?: number;
+  movementFramesRemaining?: number;
+  startX?: number;
 };
 
 export type GameBoard = {
@@ -42,11 +56,13 @@ export type GameBoard = {
   getColor: (x: number, y: number) => number;
 };
 
+// Updated GameState type
 export type GameState = {
   board: GameBoard;
   ball: Ball;
   paddle: Paddle;
   score: number;
+  options?: SimulationOptions; // Added optional options property
 };
 
 export type SimulationOptions = {
@@ -65,13 +81,6 @@ export type Block = {
   y: number;
   lives: number;
   visible?: boolean;
-};
-
-export type Ball = {
-  x: number;
-  y: number;
-  dx: number;
-  dy: number;
 };
 
 export type AnimationFrame = {

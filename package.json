@@ -1,6 +1,6 @@
 {
   "name": "breek",
-  "version": "1.0.3",
+  "version": "1.0.5",
   "description": "Break your GitHub contribution graph into a playable breakout animation",
   "private": true,
   "workspaces": [
