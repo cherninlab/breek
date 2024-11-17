@@ -1,3 +1,5 @@
+// packages/svg-creator/src/index.ts
+
 import {
   AnimationFrame,
   BALL_RADIUS,
@@ -17,11 +19,10 @@ export const createSvg = (
   const width = initialBoard.width;
   const height = initialBoard.height + EXTRA_SPACE; // Add extra space for the paddle and ball
 
-  // ** Optimization Parameters **
-  const sampleRate = 5; // Adjust this value to control sampling (e.g., 5, 10)
+  const sampleRate = 1; // Include every frame
   const sampledFrames = frames.filter((_, index) => index % sampleRate === 0);
 
-  const animationDuration = sampledFrames.length / 16; // Assuming 16 fps
+  const animationDuration = sampledFrames.length / 60; // Assuming 60 fps
 
   let svg = `<svg viewBox="0 0 ${width} ${height}" width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">`;
 
@@ -61,20 +62,20 @@ export const createSvg = (
     }
   `;
 
-  // Paddle Keyframes (sampled)
+  // Paddle Keyframes
   let paddleKeyframes = `@keyframes paddleMovement {`;
   sampledFrames.forEach((frame, frameIndex) => {
     const percentage = (frameIndex / (sampledFrames.length - 1)) * 100;
     paddleKeyframes += `
       ${percentage}% {
-        transform: translateX(${frame.paddle.x}px);
+        transform: translate(${frame.paddle.x}px, 0);
       }
     `;
   });
   paddleKeyframes += "}";
   svg += paddleKeyframes;
 
-  // Ball Keyframes (sampled)
+  // Ball Keyframes
   let ballKeyframes = `@keyframes ballMovement {`;
   sampledFrames.forEach((frame, frameIndex) => {
     const percentage = (frameIndex / (sampledFrames.length - 1)) * 100;
@@ -148,11 +149,6 @@ export const createSvg = (
 
   // Ball
   svg += `<circle id="ball" r="${BALL_RADIUS}" fill="url(#ballGradient)" filter="url(#ballGlow)" cx="0" cy="0" />`;
-
-  // Victory text (Optional)
-  svg += `<text id="victory" x="${width / 2}" y="${
-    height / 2
-  }" text-anchor="middle" fill="#FFF" font-size="24" opacity="0">Victory!</text>`;
 
   // Close SVG tag
   svg += `</svg>`;
