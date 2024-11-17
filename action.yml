@@ -8,7 +8,7 @@ branding:
 
 runs:
   using: "docker"
-  image: "docker://ghcr.io/cherninlab/breek@sha256:0e397d9ece4974e3de27fa8af4e5cc54a79661dab0296ca69d7bcdc843d2bb6d"
+  image: "docker://ghcr.io/cherninlab/breek@sha256:1132adfa01ebc002f1787af780f31fc99f25af3ac7d3dd018261559f5cfe10e7"
 
 inputs:
   github_user_name:
