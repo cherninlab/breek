@@ -6,3 +6,4 @@ server
 !svg-only/dist
 build
 .env
+.export.*

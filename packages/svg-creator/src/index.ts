@@ -1,26 +1,27 @@
 import {
-  GameBoard,
-  DrawOptions,
   AnimationFrame,
+  BALL_RADIUS,
+  DOT_SIZE,
+  DrawOptions,
+  EXTRA_SPACE,
+  GameBoard,
+  PADDLE_HEIGHT,
   PADDLE_WIDTH,
 } from "@breek/commons";
-import {
-  DOT_SIZE,
-  PADDLE_HEIGHT,
-  BALL_RADIUS,
-  EXTRA_SPACE,
-} from "@breek/commons";
-
-const TRAIL_LENGTH = 5;
 
 export const createSvg = (
   initialBoard: GameBoard,
   frames: AnimationFrame[],
-  options: DrawOptions,
+  options: DrawOptions
 ): string => {
   const width = initialBoard.width;
   const height = initialBoard.height + EXTRA_SPACE; // Add extra space for the paddle and ball
-  const animationDuration = frames.length / 60; // 60 fps
+
+  // ** Optimization Parameters **
+  const sampleRate = 5; // Adjust this value to control sampling (e.g., 5, 10)
+  const sampledFrames = frames.filter((_, index) => index % sampleRate === 0);
+
+  const animationDuration = sampledFrames.length / 16; // Assuming 16 fps
 
   let svg = `<svg viewBox="0 0 ${width} ${height}" width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">`;
 
@@ -37,83 +38,123 @@ export const createSvg = (
     </defs>
   `;
 
-  // Define styles
-  svg += `<style>
-    .dot {
-        shape-rendering: geometricPrecision;
-        stroke-width: 1px;
-        width: 12px;
-        height: 12px;
-      }
-      #paddle {
-        transition: all .1s ease-out;
-      }
-    </style>`;
+  // Start style tag
+  svg += `<style>`;
 
-  // Blocks
+  // Base styles
+  svg += `
+    .dot {
+      shape-rendering: geometricPrecision;
+      stroke-width: 1px;
+      width: ${DOT_SIZE - 1}px;
+      height: ${DOT_SIZE - 1}px;
+      opacity: 1;
+      transition: opacity 0.5s;
+    }
+    #paddle {
+      transform-origin: top left;
+      animation: paddleMovement ${animationDuration}s linear forwards;
+    }
+    #ball {
+      transform-origin: center;
+      animation: ballMovement ${animationDuration}s linear forwards;
+    }
+  `;
+
+  // Paddle Keyframes (sampled)
+  let paddleKeyframes = `@keyframes paddleMovement {`;
+  sampledFrames.forEach((frame, frameIndex) => {
+    const percentage = (frameIndex / (sampledFrames.length - 1)) * 100;
+    paddleKeyframes += `
+      ${percentage}% {
+        transform: translateX(${frame.paddle.x}px);
+      }
+    `;
+  });
+  paddleKeyframes += "}";
+  svg += paddleKeyframes;
+
+  // Ball Keyframes (sampled)
+  let ballKeyframes = `@keyframes ballMovement {`;
+  sampledFrames.forEach((frame, frameIndex) => {
+    const percentage = (frameIndex / (sampledFrames.length - 1)) * 100;
+    ballKeyframes += `
+      ${percentage}% {
+        transform: translate(${frame.ball.x}px, ${frame.ball.y}px);
+      }
+    `;
+  });
+  ballKeyframes += "}";
+  svg += ballKeyframes;
+
+  // Blocks (only animate when they disappear)
+  initialBoard.blocks.forEach((_, index) => {
+    const blockId = `block-${index}`;
+    const keyframesName = `blockFade-${index}`;
+    let hitFrameIndex = -1;
+
+    // Find when the block is hit
+    for (let frameIndex = 0; frameIndex < sampledFrames.length; frameIndex++) {
+      const blockState = sampledFrames[frameIndex].board.blocks[index];
+      if (blockState && !blockState.visible) {
+        hitFrameIndex = frameIndex;
+        break;
+      }
+    }
+
+    if (hitFrameIndex !== -1) {
+      const percentage = (hitFrameIndex / (sampledFrames.length - 1)) * 100;
+
+      // Add animation to fade out block
+      svg += `
+        #${blockId} {
+          animation: ${keyframesName} ${animationDuration}s linear forwards;
+          animation-fill-mode: forwards;
+        }
+        @keyframes ${keyframesName} {
+          0% {
+            opacity: 1;
+          }
+          ${percentage}% {
+            opacity: 1;
+          }
+          ${percentage + 0.1}% {
+            opacity: 0;
+          }
+          100% {
+            opacity: 0;
+          }
+        }
+      `;
+    }
+  });
+
+  // Close style tag
+  svg += `</style>`;
+
+  // Create block elements
   initialBoard.blocks.forEach((block, index) => {
-    svg += `<rect id="block-${index}" x="${block.x + 1}" y="${block.y + 1}" width="${DOT_SIZE - 1}" height="${DOT_SIZE - 1}" fill="${options.colorDots[block.lives - 1]}" class="dot" rx="2" ry="2">`;
-    svg += `<animate attributeName="fill" dur="${animationDuration}s" repeatCount="indefinite" values="${frames
-      .map((frame) => {
-        const blockState = frame.board.blocks[index];
-        return blockState && blockState.visible
-          ? options.colorDots[blockState.lives - 1]
-          : "none";
-      })
-      .join(";")}" />`;
-    svg += `<animate attributeName="opacity" dur="${animationDuration}s" repeatCount="indefinite" values="${frames
-      .map((frame) => {
-        const blockState = frame.board.blocks[index];
-        return blockState && blockState.visible ? "1" : "0";
-      })
-      .join(";")}" />`;
-    svg += `</rect>`;
+    const blockId = `block-${index}`;
+    const fillColor = options.colorDots[block.lives - 1] || options.colorEmpty;
+    svg += `<rect id="${blockId}" x="${block.x + 1}" y="${block.y + 1}" width="${
+      DOT_SIZE - 1
+    }" height="${DOT_SIZE - 1}" fill="${fillColor}" class="dot" rx="2" ry="2" />`;
   });
 
   // Paddle
-  svg += `<rect id="paddle" width="${PADDLE_WIDTH}" height="${PADDLE_HEIGHT}"  fill="${options.colorPaddle}" rx="2" ry="2" x="${frames[0].paddle.x}" y="${height - PADDLE_HEIGHT - 5}">`;
-  svg += `<animate attributeName="x" dur="${animationDuration}s" repeatCount="indefinite" values="${frames
-    .map((frame) => frame.paddle.x)
-    .join(";")}" />`;
-  svg += `</rect>`;
-
-  // Ball trail
-  for (let i = 1; i <= TRAIL_LENGTH; i++) {
-    svg += `<circle class="trail" r="${BALL_RADIUS - i + 1}" fill="rgba(255, ${255 - i * 50}, 0, ${1 - i / TRAIL_LENGTH})" cx="${frames[0].ball.x}" cy="${frames[0].ball.y}">`;
-    svg += `<animate attributeName="cx" dur="${animationDuration}s" repeatCount="indefinite" values="${frames
-      .map((_, frameIndex) => {
-        const prevFrame = frames[Math.max(0, frameIndex - i)];
-        return prevFrame.ball.x;
-      })
-      .join(";")}" />`;
-    svg += `<animate attributeName="cy" dur="${animationDuration}s" repeatCount="indefinite" values="${frames
-      .map((_, frameIndex) => {
-        const prevFrame = frames[Math.max(0, frameIndex - i)];
-        return prevFrame.ball.y;
-      })
-      .join(";")}" />`;
-    svg += `</circle>`;
-  }
+  svg += `<rect id="paddle" width="${PADDLE_WIDTH}" height="${PADDLE_HEIGHT}" fill="${
+    options.colorPaddle
+  }" rx="2" ry="2" x="0" y="${height - PADDLE_HEIGHT - 5}" />`;
 
   // Ball
-  svg += `<circle id="ball" r="${BALL_RADIUS}" fill="url(#ballGradient)" filter="url(#ballGlow)" cx="${frames[0].ball.x}" cy="${frames[0].ball.y}">`;
-  svg += `<animate attributeName="cx" dur="${animationDuration}s" repeatCount="indefinite" values="${frames
-    .map((frame) => frame.ball.x)
-    .join(";")}" />`;
-  svg += `<animate attributeName="cy" dur="${animationDuration}s" repeatCount="indefinite" values="${frames
-    .map((frame) => frame.ball.y)
-    .join(";")}" />`;
-  svg += `</circle>`;
+  svg += `<circle id="ball" r="${BALL_RADIUS}" fill="url(#ballGradient)" filter="url(#ballGlow)" cx="0" cy="0" />`;
 
-  // Victory text
-  svg += `<text id="victory" x="${width / 2}" y="${height / 2}" text-anchor="middle" fill="#FFF" font-size="24" opacity="0">Victory!`;
-  svg += `<animate attributeName="opacity" dur="${animationDuration}s" repeatCount="1" values="${frames
-    .map((frame) =>
-      frame.board.blocks.every((block) => !block.visible) ? "1" : "0",
-    )
-    .join(";")}" />`;
-  svg += `</text>`;
+  // Victory text (Optional)
+  svg += `<text id="victory" x="${width / 2}" y="${
+    height / 2
+  }" text-anchor="middle" fill="#FFF" font-size="24" opacity="0">Victory!</text>`;
 
-  svg += "</svg>";
+  // Close SVG tag
+  svg += `</svg>`;
   return svg;
 };
